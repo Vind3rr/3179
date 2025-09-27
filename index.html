@@ -1,12 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My First HTML Document</title>
+  <meta charset="utf-8" />
+  <title>AIHW Overweight/Obesity — Australia (2022)</title>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
 </head>
 <body>
-    <h1>Table of Student and Grade</h1>
-    <p>My First Paragraph.</p>
+  <div id="vis"></div>
+  <script>
+    vegaEmbed("#vis", "map.json", { actions: false });
+  </script>
 </body>
 </html>

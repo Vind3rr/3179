@@ -1,0 +1,75 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": "Adults with Obesity (%) — Australia by State/Territory (Age-standardised, 2022)",
+  "width": 800,
+  "height": 500,
+  "projection": { "type": "equalEarth" },
+
+  "layer": [
+    /* Base AU states in light gray + tooltip “data not available” (class style) */
+    {
+      "data": {
+        "url": "https://raw.githubusercontent.com/rowanhogan/australian-states/master/states.geojson",
+        "format": { "type": "geojson" }
+      },
+      "transform": [
+        { "calculate": "'Data is not available in ' + datum.properties.STATE_NAME", "as": "note" }
+      ],
+      "mark": { "type": "geoshape", "fill": "lightgray", "stroke": "white" },
+      "encoding": { "tooltip": { "field": "note" } }
+    },
+
+    /* Choropleth overlay after lookup join (exactly like the class COVID example) */
+    {
+      "data": {
+        "url": "https://raw.githubusercontent.com/rowanhogan/australian-states/master/states.geojson",
+        "format": { "type": "geojson" }
+      },
+      "transform": [
+        {
+          "lookup": "properties.STATE_NAME",
+          "from": {
+            "data": {
+              "url": "https://raw.githubusercontent.com/Vind3rr/3179/main/aihw_phn_overweight_obese_2022.csv"
+            },
+            "transform": [
+              { "filter": "isValid(datum.AgeStd_percent)" },
+
+              /* Aggregate PHN → state mean */
+              { "aggregate": [{ "op": "mean", "field": "AgeStd_percent", "as": "Percent" }], "groupby": ["State"] },
+
+              /* Map abbreviations to full state names so the join key matches the GeoJSON */
+              {
+                "calculate":
+                  "datum.State=='NSW' ? 'New South Wales' :" +
+                  "datum.State=='VIC' ? 'Victoria' :" +
+                  "datum.State=='QLD' ? 'Queensland' :" +
+                  "datum.State=='SA'  ? 'South Australia' :" +
+                  "datum.State=='WA'  ? 'Western Australia' :" +
+                  "datum.State=='TAS' ? 'Tasmania' :" +
+                  "datum.State=='NT'  ? 'Northern Territory' :" +
+                  "datum.State=='ACT' ? 'Australian Capital Territory' : datum.State",
+                "as": "STATE_NAME"
+              }
+            ],
+            "key": "STATE_NAME",
+            "fields": ["Percent"]
+          }
+        }
+      ],
+      "mark": { "type": "geoshape", "stroke": "white" },
+      "encoding": {
+        "color": {
+          "field": "Percent",
+          "type": "quantitative",
+          "title": "Adults with Obesity (%)",
+          "scale": { "scheme": "blues" }
+        },
+        "tooltip": [
+          { "field": "properties.STATE_NAME", "type": "nominal", "title": "State/Territory" },
+          { "field": "Percent", "type": "quantitative", "format": ".1f", "title": "Age-std (%)" }
+        ]
+      }
+    }
+  ]
+}
